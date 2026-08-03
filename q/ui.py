@@ -36,8 +36,8 @@ def stream_write_markdown(generator: Generator[str, None, None], provider_name: 
     accumulated_text = ""
     start_time = time.time()
 
-    # Step 1: Show npm-style dots spinner until first token chunk arrives
-    with console.status(f"[bold cyan]Thinking ({provider_name.capitalize()})...[/bold cyan]", spinner="dots"):
+    # Step 1: Show minimal animated dots spinner (no text) until first token chunk arrives
+    with console.status("", spinner="dots"):
         try:
             first_chunk = next(generator)
             accumulated_text += first_chunk

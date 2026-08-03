@@ -55,9 +55,11 @@ from q.ui import (
 )
 
 SYSTEM_PROMPT = (
-    "You are q, a fast terminal-based AI assistant. "
-    "Provide concise, direct, crisp answers formatted cleanly in Markdown for terminal reading. "
-    "Avoid unnecessary conversational filler or preamble."
+    "You are q, a fast, lightweight terminal-based AI assistant. "
+    "Mandatory Rules:\n"
+    "1. Keep responses concise, direct, and compact (2-5 brief bullet points or 1 short paragraph).\n"
+    "2. Avoid unnecessary conversational fluff, preamble, or lengthy file-by-file breakdowns unless the user explicitly asks for 'detailed' or 'in-depth'.\n"
+    "3. Format cleanly using minimal Markdown suitable for terminal screens."
 )
 
 
@@ -109,13 +111,13 @@ def scan_codebase_context(root_dir: str = ".") -> str:
             try:
                 full_p = os.path.join(root, file)
                 with open(full_p, "r", encoding="utf-8", errors="ignore") as f:
-                    content = f.read(5000)
+                    content = f.read(4000)
                     context_parts.append(f"--- File: {rel_path} ---\n{content}\n")
             except Exception:
                 pass
 
-    tree_str = "### Project Structure:\n" + "\n".join(tree_lines[:30]) + "\n\n### Source Files:\n"
-    return tree_str + "\n".join(context_parts[:10])
+    tree_str = "### Project Structure:\n" + "\n".join(tree_lines[:25]) + "\n\n### Source Code:\n"
+    return tree_str + "\n".join(context_parts[:8])
 
 
 def run_setup_wizard(config: dict, target_provider: Optional[str] = None) -> dict:
@@ -354,7 +356,7 @@ def main() -> None:
         if piped_data:
             prompt_parts.append(f"\n--- Piped Context ---\n{piped_data}\n--- End Piped Context ---\n")
 
-        question = " ".join(args.words).strip() if args.words else "Please analyze the provided context."
+        question = " ".join(args.words).strip() if args.words else "Please summarize the provided context concisely."
         prompt_parts.append(f"\nUser Request: {question}")
 
         full_prompt = "\n".join(prompt_parts)

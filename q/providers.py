@@ -19,7 +19,7 @@ class BaseProvider:
 
 
 class GeminiProvider(BaseProvider):
-    """Google Gemini API streaming client."""
+    """Google Gemini API streaming client with strict delta chunk parsing."""
 
     def stream(self, messages: List[Dict[str, str]], model: str, api_key: str) -> Generator[str, None, None]:
         if not api_key:
@@ -27,16 +27,24 @@ class GeminiProvider(BaseProvider):
 
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:streamGenerateContent?alt=sse&key={api_key}"
 
-        # Gemini API schema expects role 'model' for past assistant turns
+        system_instruction_text = ""
         contents = []
+
         for msg in messages:
-            role = "model" if msg["role"] == "assistant" else "user"
-            contents.append({
-                "role": role,
-                "parts": [{"text": msg["content"]}]
-            })
+            if msg["role"] == "system":
+                system_instruction_text = msg["content"]
+            else:
+                role = "model" if msg["role"] == "assistant" else "user"
+                contents.append({
+                    "role": role,
+                    "parts": [{"text": msg["content"]}]
+                })
 
         payload = {"contents": contents}
+        if system_instruction_text:
+            payload["system_instruction"] = {
+                "parts": [{"text": system_instruction_text}]
+            }
 
         try:
             response = requests.post(
@@ -59,6 +67,7 @@ class GeminiProvider(BaseProvider):
                 pass
             raise RuntimeError(err_msg)
 
+        last_seen_text = ""
         for line in response.iter_lines():
             if not line:
                 continue
@@ -73,7 +82,15 @@ class GeminiProvider(BaseProvider):
                         for part in parts:
                             text = part.get("text", "")
                             if text:
-                                yield text
+                                # Handle both cumulative chunks and incremental deltas cleanly
+                                if text.startswith(last_seen_text) and len(text) >= len(last_seen_text):
+                                    delta = text[len(last_seen_text):]
+                                    last_seen_text = text
+                                    if delta:
+                                        yield delta
+                                else:
+                                    last_seen_text += text
+                                    yield text
                 except json.JSONDecodeError:
                     continue
 

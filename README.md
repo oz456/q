@@ -1,56 +1,75 @@
-# q — Production Terminal AI Assistant with Codebase Awareness
+# q — Fast Multi-Provider Terminal AI Assistant
 
-**q** is a fast, production-grade command-line AI client supporting **Google Gemini**, **OpenAI**, and **Anthropic (Claude)** with **Codebase Awareness**, **Piped STDIN Input**, **Real-Time Live Markdown Rendering**, and **Fast Provider/Model Switching**.
+[![PyPI Version](https://img.shields.io/pypi/v/q-notyourtype.svg)](https://pypi.org/project/q-notyourtype/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
+**q** is a fast, production-grade command-line AI assistant supporting **Google Gemini**, **OpenAI**, and **Anthropic (Claude)** with **Whole Codebase Awareness**, **File Context Attaching**, **Piped STDIN Processing**, and **Real-Time Streaming Output**.
 
 ---
 
-## Powerful Codebase & UNIX Features
+## Key Features
 
-- **📂 Codebase Awareness (`-c / --codebase`)**: Indexes project structure and source code files into prompt context (`q -c "how is config loaded"`).
-- **📄 File Inclusion (`-f / --file`)**: Attach a specific file to your query (`q -f q/cli.py "explain the main function"`).
-- **⚡ Piped STDIN Input**: Pipe command outputs or file contents straight into `q` (`cat file.py | q "explain this"`, `git diff | q "review these changes"`).
-- **🎨 Real-Time Live Markdown Rendering**: Uses `rich` to render bold text, code blocks with syntax highlighting, blockquotes, headings, and bullet points live as the AI streams tokens.
-- **🔑 Multi-Provider BYOK (Bring Your Own Key)**: Native support for **Google Gemini**, **OpenAI**, and **Anthropic**.
-- **🚀 Fast Provider & Model Switching**: Switch providers or models on the fly using CLI flags (`q -p anthropic ...`, `q -m gpt-4o ...`) or interactive slash commands (`/provider`, `/model`).
-- **💬 Interactive Chat REPL**: Run `q` with no arguments to start a multi-turn conversation session with context memory.
+- **📂 Codebase Awareness (`-c / --codebase`)**: Automatically indexes your project directory structure and source files into AI prompt context (`q -c "how does config loading work"`).
+- **📄 File Attachment (`-f / --file`)**: Attach a specific file to your question (`q -f q/cli.py "explain the main loop"`).
+- **⚡ Piped STDIN Input**: Pipe command outputs or code files directly into `q` (`cat main.py | q "review this"`, `git diff | q "suggest improvements"`).
+- **🎨 Real-Time Markdown Output**: Uses `rich` for real-time live Markdown streaming with syntax-highlighted code blocks and minimal status footers.
+- **🔑 Multi-Provider BYOK**: Connect your choice of **Google Gemini**, **OpenAI**, or **Anthropic (Claude)** using your own API keys.
+- **🚀 Fast Provider & Model Overrides**: Switch providers on the fly (`q -p anthropic ...`, `q -m gpt-4o ...`) or inside interactive chat using slash commands (`/provider`, `/model`).
+- **💬 Interactive Chat REPL**: Launch `q` with no arguments for a multi-turn chat session with session memory.
+- **🔒 Secure Local Storage**: Stores API keys in `~/.q/config.json` enforced with POSIX `0600` owner-only permissions.
 
 ---
 
 ## Installation
 
+### Option 1: Install via PyPI (Recommended)
 ```bash
+pip install q-notyourtype
+```
+
+*(Once installed, run **`q`** directly in any terminal shell!)*
+
+### Option 2: Install from Source
+```bash
+git clone https://github.com/oz456/q.git
+cd q
 pip install -e .
 ```
 
-Now you can run `q` from anywhere in your terminal!
-
 ---
 
-## Usage Examples
+## Quickstart & Examples
 
-### 1. Codebase Awareness & File Inclusion
+### 1. Direct Questions & Terminal Pipe Input
 ```bash
-# Ask questions about your entire codebase
-q -c how does configuration loading work
+# Ask any direct question
+q why is the sky blue
 
-# Attach a specific file
-q -f q/cli.py explain the main CLI loop
-```
-
-### 2. UNIX Pipe STDIN Support
-```bash
+# Pipe command outputs into q
 cat setup.py | q explain this setup file
 git diff | q review these code changes
 ```
 
-### 3. Direct Questions & Fast Provider Overrides
+### 2. Codebase Awareness & File Context
 ```bash
-q why is the sky blue
+# Ask questions about your entire project directory
+q -c how does configuration management work
+
+# Attach a specific file to your prompt
+q -f q/cli.py explain main function
+```
+
+### 3. Quick Provider Overrides
+```bash
+# Query Anthropic Claude directly
 q -p anthropic explain quantum computing
+
+# Query OpenAI GPT-4o
 q -p openai -m gpt-4o write a python script
 ```
 
-### 4. Interactive Chat REPL
+### 4. Interactive REPL Chat Mode
 ```bash
 q
 ```
@@ -61,27 +80,35 @@ q
 
 | Flag | Shortcut | Description | Example |
 | :--- | :--- | :--- | :--- |
-| `--codebase` | `-c` | Include project codebase structure & files in context | `q -c "how does provider setup work"` |
-| `--file` | `-f` | Attach specific file content to context | `q -f q/cli.py "explain main"` |
+| `--codebase` | `-c` | Include project directory structure & files in prompt context | `q -c "explain architecture"` |
+| `--file` | `-f` | Attach specific file content to prompt context | `q -f q/cli.py "explain main"` |
 | `--provider` | `-p` | Specify AI provider (`gemini`, `openai`, `anthropic`) | `q -p anthropic why is water wet` |
 | `--model` | `-m` | Specify AI model name | `q -m gpt-4o write a poem` |
 | `--setup` | `-s` | Re-run setup wizard manually | `q --setup` |
-| `--reset` | `-r` | Clear all saved provider API keys | `q --reset` |
+| `--reset` | `-r` | Clear all saved API keys and reset config | `q --reset` |
 | `--version` | `-v` | Display package version | `q --version` |
 | `--help` | `-h` | Display CLI help menu | `q --help` |
 
 ---
 
-## Slash Commands (Inside Interactive Mode)
+## Slash Commands (Interactive Mode)
+
+Inside the interactive chat REPL (`q`), you can use the following slash commands:
 
 | Command | Description |
 | :--- | :--- |
-| `/help` | Display slash command help table |
-| `/codebase` | Index current codebase structure & files into context |
+| `/help` | Show slash command help table |
+| `/codebase` | Index current directory structure & source files into session context |
 | `/file <path>` | Attach a specific file to conversation context |
-| `/provider [name]` | View current provider or launch interactive selection menu |
-| `/model [name]` | View current model or enter custom model name |
+| `/provider [name]` | View active provider or launch interactive provider switcher |
+| `/model [name]` | View active model or switch model name |
 | `/key [api_key]` | View or update API key for active provider |
 | `/clear` | Reset conversation memory for current session |
 | `/history` | Print full session conversation transcript |
-| `/exit` or `/quit` | Exit interactive mode |
+| `/exit` or `/quit` | Exit interactive chat session |
+
+---
+
+## License
+
+Distributed under the [MIT License](LICENSE). Open source and free to use.
